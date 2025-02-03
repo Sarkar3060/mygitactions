@@ -8,3 +8,38 @@ on:
     branches:
       - main
 
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Step 2: Run SonarQube for static code analysis (SAST)
+      - name: Set up SonarQube Scanner
+        uses: sonarsource/sonarcloud-github-action@v1.1
+        with:
+          sonar-token: ${{ secrets.SONAR_TOKEN }}
+      
+      - name: Run SonarQube Scan
+        run: sonar-scanner
+
+      # Step 3: Run OWASP ZAP for dynamic application security testing (DAST)
+      - name: Run OWASP ZAP Scan
+        uses: zaproxy/action-full-scan@v0.1.0
+        with:
+          target: "https://your-application-url.com"
+
+      # Step 4: Install and run Snyk for software composition analysis (SCA)
+      - name: Install Snyk
+        run: npm install -g snyk
+
+      - name: Run Snyk test for vulnerabilities
+        run: snyk test --all-projects
+
+      # Step 5: Fail the build if any vulnerabilities are found
+      - name: Fail on Vulnerabilities
+        if: failure()
+        run: exit 1
