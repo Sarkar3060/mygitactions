@@ -1,4 +1,4 @@
-name: Security Scan Workflow
+name: Node.js CI/CD
 
 on:
   push:
@@ -9,24 +9,32 @@ on:
       - main
 
 jobs:
-  security-scan:
+  build:
     runs-on: ubuntu-latest
-
+    
     steps:
-      # Step 1: Checkout the code
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      # Step 2: Set up SonarQube Scanner
-      - name: Set up SonarQube Scanner
-        uses: sonarsource/sonarcloud-github-action@v1.1
-        with:
-          entryPoint: sonar-scanner
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
 
-      # Step 3: Set SONAR_TOKEN environment variable
-      - name: Set SONAR_TOKEN
-        run: echo "SONAR_TOKEN=${{ secrets.SONAR_TOKEN }}" >> $GITHUB_ENV
+    - name: Install dependencies
+      run: npm install
 
-      # Step 4: Run SonarQube Scan
-      - name: Run SonarQube Scan
-        run: sonar-scanner
+    - name: Run tests
+      run: npm test
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Deploy
+      run: |
+        echo "Deploying to server..."
+        # Add your deployment script/commands here
